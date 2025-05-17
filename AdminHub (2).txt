@@ -1,0 +1,667 @@
+-- Admin Hub by NoobzyScripter (Mobile Optimized, Enhanced Design)
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Persistent data
+local settings = {
+    speed = 16,
+    jumpPower = 50,
+    infiniteJump = false,
+    noclip = false,
+    autoMapTeleport = false,
+    espEnabled = false,
+    nameESP = false,
+    autoStarsFarm = false,
+    farmSpeed = 16,
+    killNotAuto = false
+}
+
+-- GUI Setup
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AdminHub"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+-- Loading Screen
+local loadingFrame = Instance.new("Frame")
+loadingFrame.Size = UDim2.new(1, 0, 1, 0)
+loadingFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+loadingFrame.BackgroundTransparency = 0.1
+loadingFrame.Parent = screenGui
+
+local loadingText = Instance.new("TextLabel")
+loadingText.Size = UDim2.new(0.8, 0, 0.2, 0)
+loadingText.Position = UDim2.new(0.1, 0, 0.4, 0)
+loadingText.BackgroundTransparency = 1
+loadingText.Text = ":) By NoobzyScripter, enjoy ur Admin Hub!"
+loadingText.TextColor3 = Color3.fromRGB(200, 200, 255)
+loadingText.Font = Enum.Font.GothamBold
+loadingText.TextSize = 28
+loadingText.Parent = loadingFrame
+
+local loadingGradient = Instance.new("UIGradient")
+loadingGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 100)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 100, 200))
+}
+loadingGradient.Parent = loadingFrame
+
+-- Main Frame (Mobile Optimized, Enhanced Design)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0.8, 0, 0.6, 0)
+mainFrame.Position = UDim2.new(0.1, 0, 0.2, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+mainFrame.BackgroundTransparency = 0.05
+mainFrame.ClipsDescendants = true
+mainFrame.Parent = screenGui
+mainFrame.Visible = false
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 16)
+uiCorner.Parent = mainFrame
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(150, 150, 200)
+uiStroke.Thickness = 1.5
+uiStroke.Transparency = 0.3
+uiStroke.Parent = mainFrame
+
+local uiGradient = Instance.new("UIGradient")
+uiGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 50)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 50, 80))
+}
+uiGradient.Parent = mainFrame
+
+-- Title Bar
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+titleBar.Parent = mainFrame
+
+local titleText = Instance.new("TextLabel")
+titleText.Size = UDim2.new(1, -100, 1, 0)
+titleText.Position = UDim2.new(0, 50, 0, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "Admin Hub"
+titleText.TextColor3 = Color3.fromRGB(220, 220, 255)
+titleText.Font = Enum.Font.GothamBold
+titleText.TextSize = 18
+titleText.Parent = titleBar
+
+-- Control Buttons (macOS Style)
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 14, 0, 14)
+closeButton.Position = UDim2.new(0, 10, 0, 13)
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 69, 58)
+closeButton.Text = ""
+closeButton.Parent = titleBar
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(1, 0)
+closeCorner.Parent = closeButton
+
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0, 14, 0, 14)
+minimizeButton.Position = UDim2.new(0, 28, 0, 13)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(255, 191, 0)
+minimizeButton.Text = ""
+minimizeButton.Parent = titleBar
+local minimizeCorner = Instance.new("UICorner")
+minimizeCorner.CornerRadius = UDim.new(1, 0)
+minimizeCorner.Parent = minimizeButton
+
+local destroyButton = Instance.new("TextButton")
+destroyButton.Size = UDim2.new(0, 14, 0, 14)
+destroyButton.Position = UDim2.new(0, 46, 0, 13)
+destroyButton.BackgroundColor3 = Color3.fromRGB(76, 217, 100)
+destroyButton.Text = ""
+destroyButton.Parent = titleBar
+local destroyCorner = Instance.new("UICorner")
+destroyCorner.CornerRadius = UDim.new(1, 0)
+destroyCorner.Parent = destroyButton
+
+-- Tabs
+local tabFrame = Instance.new("Frame")
+tabFrame.Size = UDim2.new(1, 0, 0, 40)
+tabFrame.Position = UDim2.new(0, 0, 0, 40)
+tabFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+tabFrame.Parent = mainFrame
+
+local baseTab = Instance.new("TextButton")
+baseTab.Size = UDim2.new(0.333, 0, 1, 0)
+baseTab.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+baseTab.Text = "Base"
+baseTab.TextColor3 = Color3.fromRGB(200, 200, 255)
+baseTab.Font = Enum.Font.Gotham
+baseTab.TextSize = 16
+baseTab.Parent = tabFrame
+
+local farmCombatTab = Instance.new("TextButton")
+farmCombatTab.Size = UDim2.new(0.333, 0, 1, 0)
+farmCombatTab.Position = UDim2.new(0.333, 0, 0, 0)
+farmCombatTab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+farmCombatTab.Text = "Farm/Combat"
+farmCombatTab.TextColor3 = Color3.fromRGB(200, 200, 255)
+farmCombatTab.Font = Enum.Font.Gotham
+farmCombatTab.TextSize = 16
+farmCombatTab.Parent = tabFrame
+
+local teleportsTab = Instance.new("TextButton")
+teleportsTab.Size = UDim2.new(0.333, 0, 1, 0)
+teleportsTab.Position = UDim2.new(0.666, 0, 0, 0)
+teleportsTab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+teleportsTab.Text = "Teleports"
+teleportsTab.TextColor3 = Color3.fromRGB(200, 200, 255)
+teleportsTab.Font = Enum.Font.Gotham
+teleportsTab.TextSize = 16
+teleportsTab.Parent = tabFrame
+
+-- Content Frames
+local baseContent = Instance.new("ScrollingFrame")
+baseContent.Size = UDim2.new(1, -10, 1, -90)
+baseContent.Position = UDim2.new(0, 5, 0, 85)
+baseContent.BackgroundTransparency = 1
+baseContent.CanvasSize = UDim2.new(0, 0, 2, 0)
+baseContent.ScrollBarThickness = 4
+baseContent.Parent = mainFrame
+
+local farmCombatContent = Instance.new("ScrollingFrame")
+farmCombatContent.Size = UDim2.new(1, -10, 1, -90)
+farmCombatContent.Position = UDim2.new(0, 5, 0, 85)
+farmCombatContent.BackgroundTransparency = 1
+farmCombatContent.CanvasSize = UDim2.new(0, 0, 1, 0)
+farmCombatContent.ScrollBarThickness = 4
+farmCombatContent.Parent = mainFrame
+farmCombatContent.Visible = false
+
+local teleportsContent = Instance.new("ScrollingFrame")
+teleportsContent.Size = UDim2.new(1, -10, 1, -90)
+teleportsContent.Position = UDim2.new(0, 5, 0, 85)
+teleportsContent.BackgroundTransparency = 1
+teleportsContent.CanvasSize = UDim2.new(0, 0, 1.5, 0)
+teleportsContent.ScrollBarThickness = 4
+teleportsContent.Parent = mainFrame
+teleportsContent.Visible = false
+
+-- Dragging Functionality
+local dragging, dragInput, dragStart, startPos
+local function updateInput(input)
+    local delta = input.Position - dragStart
+    mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+titleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if dragging and dragInput then
+        updateInput(dragInput)
+    end
+end)
+
+-- Control Buttons Functionality
+closeButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+end)
+
+minimizeButton.MouseButton1Click:Connect(function()
+    mainFrame.Size = UDim2.new(0.8, 0, 0, 40)
+    mainFrame.ClipsDescendants = false
+    local connection
+    connection = titleBar.MouseButton1Click:Connect(function()
+        mainFrame.Size = UDim2.new(0.8, 0, 0.6, 0)
+        mainFrame.ClipsDescendants = true
+        connection:Disconnect()
+    end)
+end)
+
+destroyButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- Tab Switching
+baseTab.MouseButton1Click:Connect(function()
+    baseContent.Visible = true
+    farmCombatContent.Visible = false
+    teleportsContent.Visible = false
+    baseTab.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+    farmCombatTab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    teleportsTab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+end)
+
+farmCombatTab.MouseButton1Click:Connect(function()
+    baseContent.Visible = false
+    farmCombatContent.Visible = true
+    teleportsContent.Visible = false
+    baseTab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    farmCombatTab.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+    teleportsTab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+end)
+
+teleportsTab.MouseButton1Click:Connect(function()
+    baseContent.Visible = false
+    farmCombatContent.Visible = false
+    teleportsContent.Visible = true
+    baseTab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    farmCombatTab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    teleportsTab.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+end)
+
+-- Helper Function for Buttons
+local function createButton(parent, text, position, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -10, 0, 35)
+    button.Position = position
+    button.BackgroundColor3 = Color3.fromRGB(70, 130, 255)
+    button.Text = text
+    button.TextColor3 = Color3.fromRGB(220, 220, 255)
+    button.Font = Enum.Font.Gotham
+    button.TextSize = 16
+    button.Parent = parent
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 10)
+    buttonCorner.Parent = button
+    local buttonGradient = Instance.new("UIGradient")
+    buttonGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(70, 130, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 160, 255))
+    }
+    buttonGradient.Parent = button
+    button.MouseButton1Click:Connect(callback)
+    return button
+end
+
+-- Helper Function for Text Boxes
+local function createTextBox(parent, label, position, default, min, max, callback)
+    local textBoxFrame = Instance.new("Frame")
+    textBoxFrame.Size = UDim2.new(1, -10, 0, 50)
+    textBoxFrame.Position = position
+    textBoxFrame.BackgroundTransparency = 1
+    textBoxFrame.Parent = parent
+
+    local labelText = Instance.new("TextLabel")
+    labelText.Size = UDim2.new(0, 150, 0, 20)
+    labelText.Position = UDim2.new(0, 0, 0, 0)
+    labelText.BackgroundTransparency = 1
+    labelText.Text = label
+    labelText.TextColor3 = Color3.fromRGB(200, 200, 255)
+    labelText.Font = Enum.Font.Gotham
+    labelText.TextSize = 14
+    labelText.TextXAlignment = Enum.TextXAlignment.Left
+    labelText.Parent = textBoxFrame
+
+    local textBox = Instance.new("TextBox")
+    textBox.Size = UDim2.new(0, 60, 0, 25)
+    textBox.Position = UDim2.new(1, -60, 0, 20)
+    textBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    textBox.TextColor3 = Color3.fromRGB(220, 220, 255)
+    textBox.Font = Enum.Font.Gotham
+    textBox.TextSize = 14
+    textBox.Text = tostring(default)
+    textBox.Parent = textBoxFrame
+    local textBoxCorner = Instance.new("UICorner")
+    textBoxCorner.CornerRadius = UDim.new(0, 8)
+    textBoxCorner.Parent = textBox
+    local textBoxStroke = Instance.new("UIStroke")
+    textBoxStroke.Color = Color3.fromRGB(100, 100, 150)
+    textBoxStroke.Thickness = 1
+    textBoxStroke.Parent = textBox
+
+    textBox.FocusLost:Connect(function()
+        local value = tonumber(textBox.Text)
+        if value then
+            value = math.clamp(value, min, max)
+            textBox.Text = tostring(value)
+            callback(value)
+        else
+            textBox.Text = tostring(default)
+        end
+    end)
+
+    return textBoxFrame
+end
+
+-- Helper Function for Toggles
+local function createToggle(parent, label, position, default, callback)
+    local toggleFrame = Instance.new("Frame")
+    toggleFrame.Size = UDim2.new(1, -10, 0, 35)
+    toggleFrame.Position = position
+    toggleFrame.BackgroundTransparency = 1
+    toggleFrame.Parent = parent
+
+    local toggleLabel = Instance.new("TextLabel")
+    toggleLabel.Size = UDim2.new(0, 200, 1, 0)
+    toggleLabel.BackgroundTransparency = 1
+    toggleLabel.Text = label
+    toggleLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
+    toggleLabel.Font = Enum.Font.Gotham
+    toggleLabel.TextSize = 14
+    toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    toggleLabel.Parent = toggleFrame
+
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Size = UDim2.new(0, 50, 0, 25)
+    toggleButton.Position = UDim2.new(1, -50, 0, 5)
+    toggleButton.BackgroundColor3 = default and Color3.fromRGB(70, 130, 255) or Color3.fromRGB(60, 60, 80)
+    toggleButton.Text = default and "ON" or "OFF"
+    toggleButton.TextColor3 = Color3.fromRGB(220, 220, 255)
+    toggleButton.Font = Enum.Font.GothamBold
+    toggleButton.TextSize = 14
+    toggleButton.Parent = toggleFrame
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 12)
+    toggleCorner.Parent = toggleButton
+    local toggleGradient = Instance.new("UIGradient")
+    toggleGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, default and Color3.fromRGB(70, 130, 255) or Color3.fromRGB(60, 60, 80)),
+        ColorSequenceKeypoint.new(1, default and Color3.fromRGB(100, 160, 255) or Color3.fromRGB(80, 80, 100))
+    }
+    toggleGradient.Parent = toggleButton
+
+    toggleButton.MouseButton1Click:Connect(function()
+        default = not default
+        toggleButton.BackgroundColor3 = default and Color3.fromRGB(70, 130, 255) or Color3.fromRGB(60, 60, 80)
+        toggleButton.Text = default and "ON" or "OFF"
+        toggleGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, default and Color3.fromRGB(70, 130, 255) or Color3.fromRGB(60, 60, 80)),
+            ColorSequenceKeypoint.new(1, default and Color3.fromRGB(100, 160, 255) or Color3.fromRGB(80, 80, 100))
+        }
+        callback(default)
+    end)
+
+    return toggleFrame
+end
+
+-- Base Tab Content
+createTextBox(baseContent, "Speed", UDim2.new(0, 0, 0, 10), settings.speed, 16, 100, function(value)
+    settings.speed = value
+end)
+
+createTextBox(baseContent, "Jump Power", UDim2.new(0, 0, 0, 70), settings.jumpPower, 50, 200, function(value)
+    settings.jumpPower = value
+end)
+
+createToggle(baseContent, "Infinite Jump", UDim2.new(0, 0, 0, 130), settings.infiniteJump, function(enabled)
+    settings.infiniteJump = enabled
+end)
+
+createToggle(baseContent, "Noclip", UDim2.new(0, 0, 0, 170), settings.noclip, function(enabled)
+    settings.noclip = enabled
+end)
+
+createToggle(baseContent, "Auto Map Teleport", UDim2.new(0, 0, 0, 210), settings.autoMapTeleport, function(enabled)
+    settings.autoMapTeleport = enabled
+end)
+
+createToggle(baseContent, "ESP", UDim2.new(0, 0, 0, 250), settings.espEnabled, function(enabled)
+    settings.espEnabled = enabled
+end)
+
+createToggle(baseContent, "Name ESP", UDim2.new(0, 0, 0, 290), settings.nameESP, function(enabled)
+    settings.nameESP = enabled
+end)
+
+createButton(baseContent, "Anti Kick Script (IMPORTANT)", UDim2.new(0, 0, 0, 330), function()
+    local placeId = game.PlaceId
+    local jobId = game.JobId
+    local teleportCode = string.format([[
+local TeleportService = game:GetService("TeleportService")
+TeleportService:TeleportToPlaceInstance(%d, "%s")
+]], placeId, jobId)
+    local success, result = pcall(function()
+        setclipboard(teleportCode)
+    end)
+    if success then
+        button.Text = "Script Copied!"
+        wait(2)
+        button.Text = "Anti Kick Script (IMPORTANT)"
+    else
+        button.Text = "Copy Error"
+    end
+end)
+
+-- Farm/Combat Tab Content
+createToggle(farmCombatContent, "Auto Stars Farm", UDim2.new(0, 0, 0, 10), settings.autoStarsFarm, function(enabled)
+    settings.autoStarsFarm = enabled
+end)
+
+createTextBox(farmCombatContent, "Farm Speed", UDim2.new(0, 0, 0, 50), settings.farmSpeed, 16, 100, function(value)
+    settings.farmSpeed = value
+end)
+
+createToggle(farmCombatContent, "Kill (Not Auto)", UDim2.new(0, 0, 0, 110), settings.killNotAuto, function(enabled)
+    settings.killNotAuto = enabled
+end)
+
+-- Teleports Tab Content
+local teleportPositions = {
+    {"Teleport to Map", Vector3.new(-1.16, 20.00, 26.32)},
+    {"Teleport Above Map", Vector3.new(8.29, 332.49, 46.10)},
+    {"Teleport to Spawn", Vector3.new(0.00, 56.53, 248.50)},
+    {"Teleport to Ice", Vector3.new(-289.32, -36.40, -23.29)},
+    {"Teleport to Moai", Vector3.new(0.63, 221.00, -635.21)},
+    {"Teleport to Bridge", Vector3.new(1.34, 20.50, -107.41)},
+    {"Teleport to Sand Pyramid", Vector3.new(126.27, 68.00, -126.82)},
+    {"Teleport to Classic House", Vector3.new(-239.32, 55.60, 88.18)}
+}
+
+for i, tp in ipairs(teleportPositions) do
+    createButton(teleportsContent, tp[1], UDim2.new(0, 0, 0, 10 + (i-1)*45), function()
+        if rootPart then
+            rootPart.CFrame = CFrame.new(tp[2])
+        end
+    end)
+end
+
+-- Periodic Updates for Text Box Values
+spawn(function()
+    while true do
+        if humanoid then
+            humanoid.WalkSpeed = settings.speed
+            humanoid.JumpPower = settings.jumpPower
+        end
+        wait(1)
+    end
+end)
+
+-- Infinite Jump
+UserInputService.JumpRequest:Connect(function()
+    if settings.infiniteJump and humanoid then
+        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+
+-- Noclip
+RunService.Stepped:Connect(function()
+    if settings.noclip and character then
+        for _, part in pairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+-- Auto Map Teleport
+player.CharacterAdded:Connect(function(newCharacter)
+    character = newCharacter
+    humanoid = newCharacter:WaitForChild("Humanoid")
+    rootPart = newCharacter:WaitForChild("HumanoidRootPart")
+    humanoid.WalkSpeed = settings.speed
+    humanoid.JumpPower = settings.jumpPower
+    if settings.autoMapTeleport then
+        wait(0.5)
+        rootPart.CFrame = CFrame.new(-1.16, 20.00, 26.32)
+    end
+    if settings.autoStarsFarm then
+        settings.autoStarsFarm = true -- Re-enable auto farm after reset
+    end
+end)
+
+-- ESP
+local function createESP(playerToWatch)
+    if playerToWatch == player or not settings.espEnabled then return end
+    local highlight = Instance.new("Highlight")
+    highlight.Adornee = playerToWatch.Character
+    highlight.FillColor = Color3.fromRGB(255, 0, 0)
+    highlight.FillTransparency = 0.5
+    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+    highlight.Parent = playerToWatch.Character
+end
+
+Players.PlayerAdded:Connect(function(newPlayer)
+    newPlayer.CharacterAdded:Connect(function()
+        createESP(newPlayer)
+    end)
+end)
+
+for _, p in pairs(Players:GetPlayers()) do
+    createESP(p)
+end
+
+-- Name ESP (Nearest Player Indicator)
+RunService.RenderStepped:Connect(function()
+    if not settings.nameESP then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character then
+                local billboard = p.Character:FindFirstChild("NearestPlayerBillboard")
+                if billboard then
+                    billboard:Destroy()
+                end
+    end
+        return
+    end
+    local closestPlayer, closestDistance = nil, math.huge
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local distance = (rootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
+            if distance < closestDistance then
+                closestPlayer = p
+                closestDistance = distance
+            end
+        end
+    end
+    for _, p in pairs(Players:GetPlayers()) do
+        if p.Character then
+            local billboard = p.Character:FindFirstChild("NearestPlayerBillboard")
+            if p ~= closestPlayer and billboard then
+                billboard:Destroy()
+            end
+        end
+    end
+    if closestPlayer and closestPlayer.Character then
+        local billboard = closestPlayer.Character:FindFirstChild("NearestPlayerBillboard")
+        if not billboard then
+            billboard = Instance.new("BillboardGui")
+            billboard.Name = "NearestPlayerBillboard"
+            billboard.Adornee = closestPlayer.Character:FindFirstChild("Head")
+            billboard.Size = UDim2.new(0, 100, 0, 30)
+            billboard.StudsOffset = Vector3.new(0, 3, 0)
+            billboard.Parent = closestPlayer.Character
+            local textLabel = Instance.new("TextLabel")
+            textLabel.Size = UDim2.new(1, 0, 1, 0)
+            textLabel.BackgroundTransparency = 1
+            textLabel.Text = closestPlayer.Name
+            textLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+            textLabel.Font = Enum.Font.GothamBold
+            textLabel.TextSize = 16
+            textLabel.Parent = billboard
+        end
+    end
+end)
+
+-- Auto Stars Farm (Fixed)
+local function findNearestStar()
+    local activeStars = game.Workspace:FindFirstChild("ActiveStars")
+    if not activeStars then
+        return nil
+    end
+    local nearestStar, nearestDistance = nil, math.huge
+    for _, star in pairs(activeStars:GetDescendants()) do
+        if star:IsA("BasePart") then
+            local distance = (rootPart.Position - star.Position).Magnitude
+            if distance < nearestDistance then
+                nearestStar = star
+                nearestDistance = distance
+            end
+        end
+    end
+    return nearestStar
+end
+
+RunService.Heartbeat:Connect(function()
+    if settings.autoStarsFarm and rootPart then
+        local nearestStar = findNearestStar()
+        if nearestStar then
+            local targetPos = nearestStar.Position
+            local distance = (rootPart.Position - targetPos).Magnitude
+            if distance > 5 then
+                local direction = (targetPos - rootPart.Position).Unit
+                rootPart.Velocity = direction * settings.farmSpeed
+            else
+                rootPart.CFrame = CFrame.new(targetPos)
+                rootPart.Velocity = Vector3.new(0, 0, 0)
+            end
+        end
+    end
+end)
+
+-- Kill (Not Auto)
+local function teleportToNextPlayer()
+    local players = Players:GetPlayers()
+    local index = 1
+    while settings.killNotAuto do
+        local targetPlayer = players[index]
+        if targetPlayer ~= player and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            rootPart.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 2)
+        end
+        index = (index % #players) + 1
+        wait(1)
+    end
+end
+
+spawn(function()
+    while true do
+        if settings.killNotAuto then
+            teleportToNextPlayer()
+        end
+        wait()
+    end
+end)
+
+-- Loading Animation
+wait(2)
+local tween = TweenService:Create(loadingFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {BackgroundTransparency = 1})
+tween:Play()
+for _, child in pairs(loadingFrame:GetChildren()) do
+    TweenService:Create(child, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {TextTransparency = 1}):Play()
+end
+wait(0.5)
+loadingFrame.Visible = false
+mainFrame.Visible = true
